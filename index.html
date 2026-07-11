@@ -175,8 +175,8 @@
   .tod-btns{ display:flex; justify-content:center; gap:8px; flex-wrap:wrap; position:relative; }
   .tod-btn{
     font-family:'Shippori Mincho', serif;
-    font-size: 15px; font-weight:700; letter-spacing:0.15em;
-    padding: 9px 22px;
+    font-size: 14px; font-weight:700; letter-spacing:0.08em;
+    padding: 9px 15px;
     background:#faf6ec;
     border: 1px solid rgba(38,32,25,0.4);
     border-radius: 3px;
@@ -228,6 +228,8 @@
     <div class="tod-title">時間帯の運気</div>
     <div class="tod-sub">計算した日の九星・干支から、時間帯ごとの気の流れを読みます</div>
     <div class="tod-btns">
+      <button class="tod-btn" data-slot="midnight">深夜</button>
+      <button class="tod-btn" data-slot="dawn">早朝</button>
       <button class="tod-btn" data-slot="morning">朝</button>
       <button class="tod-btn" data-slot="noon">昼</button>
       <button class="tod-btn" data-slot="evening">夕</button>
@@ -240,9 +242,9 @@
   <div class="grid" id="boards"></div>
 
   <div class="legend">
-    <span>一白水星</span><span>二黒土星</span><span>三碧木星</span>
-    <span>四緑木星</span><span>五黄土星</span><span>六白金星</span>
-    <span>七赤金星</span><span>八白土星</span><span>九紫火星</span>
+    <span style="color:#2b6cb0;">一白水星</span><span style="color:#3a3226;">二黒土星</span><span style="color:#2f8f5b;">三碧木星</span>
+    <span style="color:#3f9d8a;">四緑木星</span><span style="color:#b8862b;">五黄土星</span><span style="color:#8a8f96;">六白金星</span>
+    <span style="color:#c0392b;">七赤金星</span><span style="color:#8a6d3b;">八白土星</span><span style="color:#8e44ad;">九紫火星</span>
   </div>
 
   <footer>
@@ -427,6 +429,17 @@ function boardFor(centerStar){
   return BASE.map(v => mod(v-1+shift,9)+1);
 }
 const STAR_KANJI = {1:"一白",2:"二黒",3:"三碧",4:"四緑",5:"五黄",6:"六白",7:"七赤",8:"八白",9:"九紫"};
+const STAR_COLOR = {
+  1:"#2b6cb0", // 一白水星 → 水（青）
+  2:"#3a3226", // 二黒土星 → 黒
+  3:"#2f8f5b", // 三碧木星 → 碧（緑）
+  4:"#3f9d8a", // 四緑木星 → 緑
+  5:"#b8862b", // 五黄土星 → 黄土
+  6:"#8a8f96", // 六白金星 → 白金（灰）
+  7:"#c0392b", // 七赤金星 → 赤
+  8:"#8a6d3b", // 八白土星 → 白土（茶）
+  9:"#8e44ad", // 九紫火星 → 紫
+};
 
 function render(result){
   const container = document.getElementById("boards");
@@ -459,8 +472,16 @@ function render(result){
     board.className = "board";
     values.forEach((v,i)=>{
       const cell = document.createElement("div");
-      cell.className = "cell" + (DIRS[i]==="中央" ? " center":"");
-      cell.innerHTML = `<div class="dir">${DIRS[i]}</div><div class="star">${STAR_KANJI[v]}</div>`;
+      const isCenter = DIRS[i]==="中央";
+      cell.className = "cell" + (isCenter ? " center":"");
+      let colorStyle;
+      if(isCenter){
+        const lt = {1:"#8fc0ec",2:"#c9c2b4",3:"#8fd6ab",4:"#9fe0d1",5:"#e6c479",6:"#d4d8dd",7:"#eaa199",8:"#dcc199",9:"#cfa3e0"}[v];
+        colorStyle = ` style="color:${lt};"`;
+      } else {
+        colorStyle = ` style="color:${STAR_COLOR[v]};"`;
+      }
+      cell.innerHTML = `<div class="dir">${DIRS[i]}</div><div class="star"${colorStyle}>${STAR_KANJI[v]}</div>`;
       board.appendChild(cell);
     });
     outer.appendChild(board);
@@ -541,6 +562,8 @@ document.getElementById("nowLink").addEventListener("click", ()=>{
 
 // ===== 時間帯の運気 =====
 const SLOTS = {
+  midnight:{name:'深夜', rep:0,  rep2:2,  desc:'23〜3時（子・丑の刻）'},
+  dawn:    {name:'早朝', rep:4,  rep2:6,  desc:'3〜7時（寅・卯の刻）'},
   morning: {name:'朝', rep:8,  rep2:10, desc:'7〜11時（辰・巳の刻）'},
   noon:    {name:'昼', rep:12, rep2:14, desc:'11〜15時（午・未の刻）'},
   evening: {name:'夕', rep:16, rep2:18, desc:'15〜19時（申・酉の刻）'},
