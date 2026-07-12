@@ -250,7 +250,7 @@
   <footer>
     東西は九星気学の慣例に従い、東＝向かって左／西＝向かって右で表示しています。<br>
     節入り（立春・小暑など）は平均的な暦日で近似しています。日家九星の「閏」調整は簡略化しており、まれに実際の暦と1期（60日）ずれる場合があります。<br>
-    蔵干は泰山式月律分野蔵干表（全て余気〜正気を考慮）に基づき、節入りからの経過日数で有効な蔵干（青字）を判定しています。日数境界は日単位の近似のため、境界日付近では精密計算と異なる場合があります。
+    蔵干は月律分野蔵干表（全て余気〜正気を考慮）に基づき、節入りからの経過日数で有効な蔵干（青字）を判定しています。日数境界は日単位の近似のため、境界日付近では精密計算と異なる場合があります。
   </footer>
 </div>
 
@@ -542,7 +542,7 @@ function render(result){
         : `<span style="color:var(--ink-soft);font-weight:400;">${z.gan}</span>`
     ).join(" ");
     const activeStage = r.zokan.find(z=>z.active);
-    zkItem.innerHTML = `<div class="k">蔵干（泰山式）</div><div class="v" style="font-size:17px;">${zkHtml}<span class="seal-mark">${activeStage.stage}</span></div>`;
+    zkItem.innerHTML = `<div class="k">蔵干</div><div class="v" style="font-size:17px;">${zkHtml}<span class="seal-mark">${activeStage.stage}</span></div>`;
     infoRow.appendChild(zkItem);
 
     const kb = kuubouFor(r.ganzhi);
