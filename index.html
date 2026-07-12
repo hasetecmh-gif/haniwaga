@@ -332,6 +332,30 @@ function tenkokuChichu(gan, zhi){
   return KOKU_PARTNERS[gan].map(g => g+cz);
 }
 
+// ===== 空亡（天中殺）=====
+// 60干支を10日ごとの「旬」に分け、その旬に含まれない2支が空亡
+function gzIndexOf(ganzhi){
+  const g = GAN.indexOf(ganzhi[0]), z = ZHI.indexOf(ganzhi[1]);
+  for(let i=0;i<60;i++){
+    if(i%10===g && i%12===z) return i;
+  }
+  return -1;
+}
+const JUN_NAMES = ['甲子旬','甲戌旬','甲申旬','甲午旬','甲辰旬','甲寅旬'];
+const KUUBOU = [
+  ['戌','亥'], // 甲子旬
+  ['申','酉'], // 甲戌旬
+  ['午','未'], // 甲申旬
+  ['辰','巳'], // 甲午旬
+  ['寅','卯'], // 甲辰旬
+  ['子','丑']  // 甲寅旬
+];
+function kuubouFor(ganzhi){
+  const idx = gzIndexOf(ganzhi);
+  const jun = Math.floor(idx/10);
+  return {jun: JUN_NAMES[jun], zhi: KUUBOU[jun]};
+}
+
 // 泰山式 月律分野蔵干表（余気・中気・正気と経過日数の目安）
 // thresholds = 節入りからの経過日数の上限（累積・日単位の近似）
 const ZOKAN = {
@@ -418,6 +442,7 @@ function calcAll(Y,M,D,H){
     month: {star:mStar, ganzhi:mGanzhi, mansion:mMansion, label:`${M}月`, zokan:zokanFor(mZhi, elapsed)},
     day:   {star:dStar, ganzhi:dGanzhi, mansion:dMansion, label:`${Y}/${M}/${D}`, zokan:zokanFor(dZhi, elapsed)},
     time:  {star:tStar, ganzhi:tGanzhi, mansion:null, label:hourLabel, zokan:zokanFor(tZhi, elapsed)},
+    dayVoid: kuubouFor(dGanzhi).zhi,
     elapsedDays: elapsed
   };
 }
@@ -519,6 +544,14 @@ function render(result){
     const activeStage = r.zokan.find(z=>z.active);
     zkItem.innerHTML = `<div class="k">蔵干（泰山式）</div><div class="v" style="font-size:17px;">${zkHtml}<span class="seal-mark">${activeStage.stage}</span></div>`;
     infoRow.appendChild(zkItem);
+
+    const kb = kuubouFor(r.ganzhi);
+    const inDayVoid = result.dayVoid.includes(r.ganzhi[1]);
+    const kbItem = document.createElement("div");
+    kbItem.className = "info-item";
+    kbItem.innerHTML = `<div class="k">空亡</div><div class="v" style="font-size:16px;">${kb.zhi[0]}${kb.zhi[1]}<span class="seal-mark">${kb.jun}</span>${inDayVoid ? '<span style="color:var(--seal);font-size:11px;font-weight:700;margin-left:5px;">日座空亡</span>' : ''}</div>`;
+    infoRow.appendChild(kbItem);
+
     card.appendChild(infoRow);
     container.appendChild(card);
   });
@@ -592,6 +625,7 @@ function todAnalyze(slotKey){
     const chong = CHONG_ZHI[r.time.ganzhi[1]] === r.day.ganzhi[1];
     const tkcHit = tenkokuChichu(r.day.ganzhi[0], r.day.ganzhi[1]).includes(r.time.ganzhi);
     const gooh = r.time.star===5;
+    const kuu = r.dayVoid.includes(r.time.ganzhi[1]); // 空亡の刻
     let score;
     if(tkcHit) score = -3;
     else if(chong) score = -2;
@@ -600,7 +634,8 @@ function todAnalyze(slotKey){
     else if(rel==='比和') score = 1;
     else if(rel==='日剋時') score = 0;
     else score = -1;
-    return {r, rel, chong, tkcHit, gooh, score};
+    if(kuu) score -= 1; // 空亡は結果が定まりにくい
+    return {r, rel, chong, tkcHit, gooh, kuu, score};
   }
   const j1 = judge(r1), j2 = judge(r2);
   const main = j1.score <= j2.score ? j1 : j2;
@@ -668,6 +703,7 @@ function showTod(slotKey){
     if(j.tkcHit) parts.push('時柱と日柱が天剋地冲');
     else if(j.chong) parts.push(`支冲（${j.r.time.ganzhi[1]}-${j.r.day.ganzhi[1]}）`);
     if(j.gooh) parts.push('五黄中宮の刻');
+    if(j.kuu) parts.push(`空亡の刻（${j.r.time.ganzhi[1]}）`);
     return parts.join('・');
   };
 
