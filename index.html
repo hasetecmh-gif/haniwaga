@@ -114,25 +114,21 @@
   }
   .card-head .ganshi{ font-size: 13px; color: var(--ink-soft); letter-spacing: 0.04em; }
 
-  .board-wrap{ position:relative; width: 100%; max-width: 280px; margin: 0 auto; }
-  .board-outer{ width: 100%; aspect-ratio: 1; background: #faf6ec; border: 2px solid var(--ink); }
-  .board{ width:100%; height:100%; display:grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
-  .cell{ display:flex; flex-direction:column; align-items:center; justify-content:center; border: 0.5px solid rgba(38,32,25,0.35); }
-  .cell .dir{ font-size: 10.5px; color: var(--ink-soft); letter-spacing: 0.05em; margin-bottom: 2px; }
-  .cell .star{ font-family:'Shippori Mincho', serif; font-size: 20px; font-weight:700; line-height:1; }
-  .cell.center{ background: var(--ink); }
-  .cell.center .dir{ display:none; }
-  .cell.center .star{ color: var(--gold-soft); font-size: 26px; }
-
-  .compass-labels span{
-    position:absolute; font-size: 12px; color: var(--ink-soft);
-    font-family:'Shippori Mincho', serif; font-weight: 700;
-  }
-  .c-n{ top: -20px; left: 50%; transform: translateX(-50%); }
-  .c-s{ bottom: -20px; left: 50%; transform: translateX(-50%); }
-  .c-e{ top: 50%; left: -18px; transform: translateY(-50%); }
-  .c-w{ top: 50%; right: -18px; transform: translateY(-50%); }
-  .board-frame{ padding-top: 20px; padding-bottom: 18px; }
+  .board-wrap{ position:relative; width: 100%; max-width: 300px; margin: 0 auto; }
+  .board-svg{ width:100%; height:auto; display:block; }
+  .board-svg .sector{ fill:#faf6ec; stroke:var(--ink); stroke-width:1; }
+  .board-svg .ring-cell{ fill:#f0e7d4; stroke:rgba(38,32,25,0.45); stroke-width:0.7; }
+  .board-svg .ring-cell.zhi{ fill:#f6ecd8; }
+  .board-svg .ring-cell.gan{ fill:#eae0ca; }
+  .board-svg .ring-cell.wei{ fill:#e2d7bd; }
+  .board-svg .outline{ fill:none; stroke:var(--ink); stroke-width:2; }
+  .board-svg .center-oct{ fill:var(--ink); stroke:var(--ink); stroke-width:2; }
+  .board-svg .star-t{ font-family:'Shippori Mincho', serif; font-weight:700; font-size:20px; text-anchor:middle; dominant-baseline:central; }
+  .board-svg .center-t{ font-family:'Shippori Mincho', serif; font-weight:700; font-size:24px; text-anchor:middle; dominant-baseline:central; }
+  .board-svg .ring-t{ font-family:'Shippori Mincho', serif; font-weight:700; font-size:15px; text-anchor:middle; dominant-baseline:central; fill:var(--ink); }
+  .board-svg .ring-t.wei-t{ fill:var(--ink-soft); }
+  .board-svg .dir-t{ font-family:'Shippori Mincho', serif; font-weight:700; font-size:11.5px; text-anchor:middle; dominant-baseline:central; fill:var(--ink-soft); }
+  .board-frame{ padding: 6px 0 4px; }
 
   .info-row{
     display:flex; justify-content:center; gap: 18px; margin-top: 14px;
@@ -248,6 +244,7 @@
   </div>
 
   <footer>
+    方位盤の二十四山：<span style="color:#a83a32;font-weight:700;">■干支</span>　<span style="color:#6b46a8;font-weight:700;">■天剋地冲</span>　<span style="color:#1a49b8;font-weight:700;">■蔵干（有効なもののみ）</span>　の該当方位を色分けしています（重複時は干支＞天剋地冲＞蔵干の順で表示）。戊・己は中央の土気とされ方位を持たないため、四隅には四維（艮・巽・坤・乾）が入ります。<br>
     東西は九星気学の慣例に従い、東＝向かって左／西＝向かって右で表示しています。<br>
     節入り（立春・小暑など）は平均的な暦日で近似しています。日家九星の「閏」調整は簡略化しており、まれに実際の暦と1期（60日）ずれる場合があります。<br>
     蔵干は月律分野蔵干表（全て余気〜正気を考慮）に基づき、節入りからの経過日数で有効な蔵干（青字）を判定しています。日数境界は日単位の近似のため、境界日付近では精密計算と異なる場合があります。
@@ -453,6 +450,120 @@ function boardFor(centerStar){
   const shift = centerStar-5;
   return BASE.map(v => mod(v-1+shift,9)+1);
 }
+
+// ===== 二十四山（15度刻み）=====
+// type: zhi=十二支 / gan=十干 / wei=四維
+const MOUNTAINS = [
+  {c:'子',b:0,  t:'zhi'}, {c:'癸',b:15, t:'gan'}, {c:'丑',b:30, t:'zhi'}, {c:'艮',b:45, t:'wei'},
+  {c:'寅',b:60, t:'zhi'}, {c:'甲',b:75, t:'gan'}, {c:'卯',b:90, t:'zhi'}, {c:'乙',b:105,t:'gan'},
+  {c:'辰',b:120,t:'zhi'}, {c:'巽',b:135,t:'wei'}, {c:'巳',b:150,t:'zhi'}, {c:'丙',b:165,t:'gan'},
+  {c:'午',b:180,t:'zhi'}, {c:'丁',b:195,t:'gan'}, {c:'未',b:210,t:'zhi'}, {c:'坤',b:225,t:'wei'},
+  {c:'申',b:240,t:'zhi'}, {c:'庚',b:255,t:'gan'}, {c:'酉',b:270,t:'zhi'}, {c:'辛',b:285,t:'gan'},
+  {c:'戌',b:300,t:'zhi'}, {c:'乾',b:315,t:'wei'}, {c:'亥',b:330,t:'zhi'}, {c:'壬',b:345,t:'gan'}
+];
+const MOUNTAIN_CHARS = new Set(MOUNTAINS.map(m=>m.c));
+
+// 8方位（セクター中心の方位角）と、盤配列BASEでの添字
+const SECTORS = [
+  {name:'南',   b:180, idx:1}, {name:'南西', b:225, idx:2}, {name:'西',   b:270, idx:5},
+  {name:'北西', b:315, idx:8}, {name:'北',   b:0,   idx:7}, {name:'北東', b:45,  idx:6},
+  {name:'東',   b:90,  idx:3}, {name:'南東', b:135, idx:0}
+];
+
+const CX=160, CY=160;
+const R_OUT=142, R_STAR_IN=95, R_RING_OUT=95, R_RING_IN=46;
+// 画面角φ：南を上・東を左（方位角を180度回転）
+function phiOf(bearing){ return mod(bearing-180,360); }
+function pt(r, phi){
+  const a=(phi-90)*Math.PI/180;
+  return [CX+r*Math.cos(a), CY+r*Math.sin(a)];
+}
+function fmt(p){ return p[0].toFixed(2)+","+p[1].toFixed(2); }
+// 正八角形（辺が8方位を向く）の頂点半径 → 角度φにおける境界半径
+function octR(R, phi){
+  const t = mod(phi+22.5,45)-22.5;           // 各辺中心からの角度差
+  return R*Math.cos(22.5*Math.PI/180)/Math.cos(t*Math.PI/180);
+}
+function octPath(R){
+  let d="";
+  for(let k=0;k<8;k++){
+    const phi=22.5+45*k;
+    const p=pt(R,phi);
+    d += (k===0?"M":"L")+fmt(p);
+  }
+  return d+"Z";
+}
+
+function buildBoardSVG(r){
+  const centerStar = r.star;
+  const values = boardFor(centerStar);
+
+  // --- 方位ハイライト（優先度：干支 > 天剋地冲 > 蔵干）---
+  const HI = {};
+  const setHi = (ch, cat)=>{
+    if(!ch) return;
+    if(!MOUNTAIN_CHARS.has(ch)) return; // 戊・己は方位を持たない
+    const rank = {gz:3, tkc:2, zk:1};
+    if(!HI[ch] || rank[cat] > rank[HI[ch]]) HI[ch] = cat;
+  };
+  if(r.zokan) r.zokan.filter(z=>z.active).forEach(z=> setHi(z.gan,'zk'));
+  tenkokuChichu(r.ganzhi[0], r.ganzhi[1]).forEach(gz=>{ setHi(gz[0],'tkc'); setHi(gz[1],'tkc'); });
+  setHi(r.ganzhi[0],'gz'); setHi(r.ganzhi[1],'gz');
+
+  const HI_FILL = {gz:'#f6d8d4', tkc:'#e5dcf2', zk:'#d6e3f7'};
+  const HI_TEXT = {gz:'#a83a32', tkc:'#6b46a8', zk:'#1a49b8'};
+
+  const pal = CENTER_PALETTE[centerStar];
+  let s = `<svg class="board-svg" viewBox="0 0 320 320" role="img">
+    <defs>
+      <radialGradient id="centerGrad-${centerStar}" cx="35%" cy="30%" r="75%">
+        <stop offset="0%" stop-color="${pal[0]}"/>
+        <stop offset="45%" stop-color="${pal[1]}"/>
+        <stop offset="100%" stop-color="${pal[2]}"/>
+      </radialGradient>
+    </defs>`;
+
+  // --- 8方位セクター（九星）---
+  SECTORS.forEach(sec=>{
+    const phi=phiOf(sec.b), p1=phi-22.5, p2=phi+22.5;
+    const oA=pt(octR(R_OUT,p1),p1), oB=pt(octR(R_OUT,p2),p2);
+    const iA=pt(octR(R_RING_OUT,p1),p1), iB=pt(octR(R_RING_OUT,p2),p2);
+    s += `<polygon class="sector" points="${fmt(oA)} ${fmt(oB)} ${fmt(iB)} ${fmt(iA)}"/>`;
+    const v=values[sec.idx];
+    const rm=(octR(R_OUT,phi)+octR(R_RING_OUT,phi))/2;
+    const tp=pt(rm, phi);
+    s += `<text class="star-t" x="${tp[0].toFixed(1)}" y="${tp[1].toFixed(1)}" fill="${STAR_COLOR[v]}">${STAR_KANJI[v]}</text>`;
+  });
+
+  // --- 二十四山リング ---
+  MOUNTAINS.forEach(m=>{
+    const phi=phiOf(m.b), p1=phi-7.5, p2=phi+7.5;
+    const oA=pt(octR(R_RING_OUT,p1),p1), oB=pt(octR(R_RING_OUT,p2),p2);
+    const iA=pt(octR(R_RING_IN,p1),p1), iB=pt(octR(R_RING_IN,p2),p2);
+    const cat=HI[m.c];
+    const fill = cat ? ` style="fill:${HI_FILL[cat]};"` : "";
+    s += `<polygon class="ring-cell ${m.t}"${fill} points="${fmt(oA)} ${fmt(oB)} ${fmt(iB)} ${fmt(iA)}"/>`;
+    const rm=(octR(R_RING_OUT,phi)+octR(R_RING_IN,phi))/2;
+    const tp=pt(rm, phi);
+    const tstyle = cat ? ` style="fill:${HI_TEXT[cat]};font-weight:700;"` : "";
+    s += `<text class="ring-t${m.t==='wei'?' wei-t':''}"${tstyle} x="${tp[0].toFixed(1)}" y="${tp[1].toFixed(1)}">${m.c}</text>`;
+  });
+
+  // --- 中宮 ---
+  s += `<path class="center-oct" style="fill:url(#centerGrad-${centerStar});" d="${octPath(R_RING_IN)}"/>`;
+  s += `<path style="fill:none;stroke:var(--gold);stroke-width:1.4;opacity:0.85;" d="${octPath(R_RING_IN-6)}"/>`;
+  s += `<text class="center-t" x="${CX}" y="${CY}" fill="${pal[3]}">${STAR_KANJI[centerStar]}</text>`;
+
+  // --- 外枠と4方位ラベル ---
+  s += `<path class="outline" d="${octPath(R_OUT)}"/>`;
+  const labels=[['南',180],['北',0],['東',90],['西',270]];
+  labels.forEach(([nm,b])=>{
+    const tp=pt(R_OUT+10, phiOf(b));
+    s += `<text class="dir-t" x="${tp[0].toFixed(1)}" y="${tp[1].toFixed(1)}">${nm}</text>`;
+  });
+
+  return s+`</svg>`;
+}
 const STAR_KANJI = {1:"一白",2:"二黒",3:"三碧",4:"四緑",5:"五黄",6:"六白",7:"七赤",8:"八白",9:"九紫"};
 const STAR_COLOR = {
   1:"#2b6cb0", // 一白水星 → 水（青）
@@ -465,6 +576,18 @@ const STAR_COLOR = {
   8:"#8a6d3b", // 八白土星 → 白土（茶）
   9:"#8e44ad", // 九紫火星 → 紫
 };
+// 中宮メダリオン：星ごとの [ハイライト, 中間, 暗部, 文字色]
+const CENTER_PALETTE = {
+  1: ["#3d6ea0","#1a3a54","#0b1c2c","#bfe0ff"], // 一白水星
+  2: ["#4a4033","#2b241a","#17120c","#e4dcc8"], // 二黒土星
+  3: ["#2f6b4a","#17402c","#0b2318","#b7ecc9"], // 三碧木星
+  4: ["#2f7d6e","#184d43","#0b2b26","#bdf0e4"], // 四緑木星
+  5: ["#8a6a1f","#5c4714","#34290c","#ffe6a3"], // 五黄土星
+  6: ["#5a5f66","#34383d","#1c1e21","#eef1f4"], // 六白金星
+  7: ["#8c3a30","#5c211a","#34120e","#ffc4b8"], // 七赤金星
+  8: ["#6b4f28","#402f18","#241a0d","#f0dcae"], // 八白土星
+  9: ["#6b3a8c","#402257","#241332","#e9c9ff"], // 九紫火星
+};
 
 function render(result){
   const container = document.getElementById("boards");
@@ -475,7 +598,6 @@ function render(result){
   ];
   order.forEach(o=>{
     const r = result[o.key];
-    const values = boardFor(r.star);
 
     const card = document.createElement("div");
     card.className = "card";
@@ -488,30 +610,7 @@ function render(result){
     frame.className = "board-frame";
     const boardWrap = document.createElement("div");
     boardWrap.className = "board-wrap";
-    const compass = document.createElement("div");
-    compass.className = "compass-labels";
-    compass.innerHTML = `<span class="c-n">南</span><span class="c-s">北</span><span class="c-e">東</span><span class="c-w">西</span>`;
-    const outer = document.createElement("div");
-    outer.className = "board-outer";
-    const board = document.createElement("div");
-    board.className = "board";
-    values.forEach((v,i)=>{
-      const cell = document.createElement("div");
-      const isCenter = DIRS[i]==="中央";
-      cell.className = "cell" + (isCenter ? " center":"");
-      let colorStyle;
-      if(isCenter){
-        const lt = {1:"#8fc0ec",2:"#c9c2b4",3:"#8fd6ab",4:"#9fe0d1",5:"#e6c479",6:"#d4d8dd",7:"#eaa199",8:"#dcc199",9:"#cfa3e0"}[v];
-        colorStyle = ` style="color:${lt};"`;
-      } else {
-        colorStyle = ` style="color:${STAR_COLOR[v]};"`;
-      }
-      cell.innerHTML = `<div class="dir">${DIRS[i]}</div><div class="star"${colorStyle}>${STAR_KANJI[v]}</div>`;
-      board.appendChild(cell);
-    });
-    outer.appendChild(board);
-    boardWrap.appendChild(compass);
-    boardWrap.appendChild(outer);
+    boardWrap.innerHTML = buildBoardSVG(r);
     frame.appendChild(boardWrap);
     card.appendChild(frame);
 
@@ -520,7 +619,7 @@ function render(result){
     const etoItem = document.createElement("div");
     etoItem.className = "info-item";
     const etoRead = ETO_READ[r.ganzhi] || "";
-    etoItem.innerHTML = `<div class="k">干支</div><div class="v">${r.ganzhi}<span class="seal-mark">${etoRead}</span></div>`;
+    etoItem.innerHTML = `<div class="k" style="color:#a83a32;">干支</div><div class="v">${r.ganzhi}<span class="seal-mark">${etoRead}</span></div>`;
     infoRow.appendChild(etoItem);
     if(r.mansion){
       const shukuItem = document.createElement("div");
@@ -531,7 +630,7 @@ function render(result){
     const tkc = tenkokuChichu(r.ganzhi[0], r.ganzhi[1]);
     const tkcItem = document.createElement("div");
     tkcItem.className = "info-item";
-    tkcItem.innerHTML = `<div class="k">天剋地冲</div><div class="v" style="font-size:15px;">${tkc[0]}<span class="seal-mark">${ETO_READ[tkc[0]]||""}</span>／${tkc[1]}<span class="seal-mark">${ETO_READ[tkc[1]]||""}</span></div>`;
+    tkcItem.innerHTML = `<div class="k" style="color:#6b46a8;">天剋地冲</div><div class="v" style="font-size:15px;">${tkc[0]}<span class="seal-mark">${ETO_READ[tkc[0]]||""}</span>／${tkc[1]}<span class="seal-mark">${ETO_READ[tkc[1]]||""}</span></div>`;
     infoRow.appendChild(tkcItem);
 
     const zkItem = document.createElement("div");
@@ -542,7 +641,7 @@ function render(result){
         : `<span style="color:var(--ink-soft);font-weight:400;">${z.gan}</span>`
     ).join(" ");
     const activeStage = r.zokan.find(z=>z.active);
-    zkItem.innerHTML = `<div class="k">蔵干</div><div class="v" style="font-size:17px;">${zkHtml}<span class="seal-mark">${activeStage.stage}</span></div>`;
+    zkItem.innerHTML = `<div class="k" style="color:#1a49b8;">蔵干</div><div class="v" style="font-size:17px;">${zkHtml}<span class="seal-mark">${activeStage.stage}</span></div>`;
     infoRow.appendChild(zkItem);
 
     const kb = kuubouFor(r.ganzhi);
